@@ -1,0 +1,1 @@
+Mark/database folder should be present in your working directory rest are created by the program itself. Facial datasets deleted for privacy reasons. 
