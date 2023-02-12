@@ -54,6 +54,14 @@ The program may not work as expected with low-quality images or poorly lit envir
 
 The program may not be able to recognize faces with significant changes (e.g. facial hair, glasses, masks, etc.).
 
+# Team Members
+This project was undertaken as a team assignment
+Shivam Litoria
+M Satya Sai Teja
+Holesh Sharma
+Ankit Kumar 
+
+
 # Contributing
 If you would like to contribute to the development of this program, please feel free to submit a pull request.
 
