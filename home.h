@@ -6,7 +6,7 @@
 #include <QString>
 #include <QApplication>
 #include <QtWidgets>
-#include<iostream>
+#include <iostream>
 #include <QGraphicsOpacityEffect>
 #include <QPropertyAnimation>
 
@@ -30,19 +30,63 @@
 #include <sstream>
 
 class Home;
+class MarkAttendance;
 
 using namespace std;
 using namespace cv;
 using namespace cv::face;
 
-void detectAndDisplay(Mat frame,  QSpinBox *rollEdit);
-static void dbread(vector<Mat> &images, vector<int> &labels);
-void eigenFaceTrainer();
-void faceRecognition( QString file, Home *home, QString cf, QComboBox *comboBox, QSpinBox *batchEdit,QString attendanceFile, QDateEdit *today);
-void addFace(int i, QSpinBox *rollEdit, QString classFolder, QString vidPath);
-void mark_attendance(QString file, Home *home, QString cf, QComboBox *comboBox, QSpinBox *batchEdit,int label);
+class AddStudent
+{
+private:
+    string cf;
+    string ff;
+    string ef;
+    string sf;
+    string videoPath;
+    string roll;
+    int filenumber;
 
+public:
+    AddStudent(QString classFolder, QSpinBox *rollEdit);
+    void detectAndDisplay(Mat frame);
+    void addFace(int i, QString vidPath);
+    void eigenFaceTrainer();
+};
 
+class Student
+{
+private:
+    QString name;
+    string roll;
+    QString Label;
+    QString date;
+    bool present;
+    bool marked;
+
+public:
+    Student(int label);
+    string Mark(MarkAttendance *M);
+};
+
+class MarkAttendance
+{
+private:
+    string cf;
+    string ef;
+    string sf;
+    string af;
+    QString SF;
+    QString AF;
+    int label;
+    bool marked = false;
+    int array_hash[200] = {0};
+
+public:
+    MarkAttendance(QString cf, QComboBox *subBox, QComboBox *comboBox, QSpinBox *batchEdit, QString today);
+    void faceRecognition();
+    friend string Student::Mark(MarkAttendance *M);
+};
 
 class Home : public QMainWindow
 {
@@ -50,35 +94,24 @@ class Home : public QMainWindow
 private:
     QMainWindow *menu;
     QWidget *addStudentPage;
-
-    QLineEdit *nameEdit;
-    QSpinBox *rollEdit;
-    QComboBox *comboBox;
-    QSpinBox *batchEdit;
-
-    QString dir = "/home/teja/Mark/mark/Database/";
-
-    QString classFolder;
-    QString faceFolder;
-
+    QMainWindow *addFacePage;
+    QString today;
+    bool isFaceAdded;
+    QString dir = "/home/litoria/Mark/Database/";
 
 public:
-    QString today;
-    bool present =false;
     Home();
     ~Home();
-    QString Label;
 
 private slots:
     void showMenu();
-    void dateChanged(const QDate &date);
     void addFaceButton(QString classFolder, QString faceFolder, QSpinBox *rollEdit);
     void recognizeFaceButton();
     void showMessage(const QString &message);
     void addStudentButton();
     void deleteStudentButton();
-    void webCamButton(QSpinBox *rollEdit, QString classFolder);
-    void videoPathButton(QSpinBox *rollEdit, QString classFolder);
+    void webCamButton(AddStudent &S);
+    void videoButton(QString classFolder, QSpinBox *rollEdit);
 };
 
 #endif // HOME_H
