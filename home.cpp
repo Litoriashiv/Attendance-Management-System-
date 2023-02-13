@@ -1,23 +1,17 @@
 #include "home.h"
 
-bool isFaceAdded = false;
 using namespace std;
 
-void Home::dateChanged(const QDate &date)
-{
-    today = date.toString("dd-MM-yyyy");
-}
-
-void Home:: showMessage(const QString &message)
+void Home::showMessage(const QString &message)
 {
     QWidget *messagePage = new QWidget;
     messagePage->setWindowTitle("Message");
-    messagePage->setFixedSize(339, 599);
+    messagePage->setFixedSize(432, 768);
 
     QLabel *bg = new QLabel(messagePage);
-    bg->setPixmap(QPixmap("bg(2).png"));
+    bg->setPixmap(QPixmap("bgs/4.jpg"));
     bg->setScaledContents(true);
-    bg->resize(339, 599);
+    bg->resize(432, 768);
 
     QVBoxLayout *layout = new QVBoxLayout;
 
@@ -44,25 +38,28 @@ void Home:: showMessage(const QString &message)
     menu->hide();
 }
 
-void Home:: videoPathButton(QSpinBox *rollEdit, QString classFolder)
+void Home::videoButton(QString classFolder, QSpinBox *rollEdit)
 {
     QWidget *videoPathPage = new QWidget;
     videoPathPage->setWindowTitle("Add Video");
-    videoPathPage->setFixedSize(339, 599);
+    videoPathPage->setFixedSize(432, 768);
 
     QLabel *bg = new QLabel(videoPathPage);
-    bg->setPixmap(QPixmap("bg(2).png"));
+    bg->setPixmap(QPixmap("bgs/6.jpg"));
     bg->setScaledContents(true);
-    bg->resize(339, 599);
+    bg->resize(432, 768);
 
     QVBoxLayout *layout = new QVBoxLayout;
 
-    QLabel *videoLabel = new QLabel(videoPathPage);
+    QLabel *videoLabel = new QLabel("Enter video name with extension");
     QLineEdit *vidname = new QLineEdit;
-    layout->addWidget(videoLabel);
+    QFont font = videoLabel->font();
+    font.setPointSize(16);
+    videoLabel->setFont(font);
+    videoLabel->setAlignment(Qt::AlignCenter);
     layout->addWidget(vidname);
+    layout->addWidget(videoLabel);
 
-    cout<<vidname->text().toStdString();
     QPushButton *submitButton = new QPushButton("Submit");
     layout->addWidget(submitButton);
 
@@ -78,9 +75,10 @@ void Home:: videoPathButton(QSpinBox *rollEdit, QString classFolder)
 
     connect(submitButton, &QPushButton::clicked, [this, vidname, classFolder, videoPathPage, rollEdit]()
     {
-        QString vidPath = vidname->text();
+        AddStudent S(classFolder, rollEdit);
+
         QString vidFolder = classFolder + "video";
-        QString full = vidFolder + "/" + vidPath;
+        QString full = vidFolder + "/" + vidname->text();
 
         QFile vidFile(full);
 
@@ -90,8 +88,9 @@ void Home:: videoPathButton(QSpinBox *rollEdit, QString classFolder)
         {
             if(vidFile.exists())
             {
-                //attendance = false;
-                addFace(1, rollEdit, classFolder, vidPath);
+                qDebug() << full;
+                isFaceAdded = true;
+                S.addFace(1, full);
             }
             else
             {
@@ -110,42 +109,36 @@ void Home:: videoPathButton(QSpinBox *rollEdit, QString classFolder)
     videoPathPage->show();
 }
 
-void Home:: webCamButton(QSpinBox *rollEdit, QString classFolder)
+void Home::webCamButton(AddStudent &S)
 {
-    //attendance = false;
-    addFace(2, rollEdit, classFolder, "/video");
-    eigenFaceTrainer();
-
-    isFaceAdded = true;
+    S.addFace(2, "webcam");
 }
 
-void Home:: addFaceButton(QString classFolder, QString faceFolder, QSpinBox *rollEdit)
+void Home::addFaceButton(QString classFolder, QString faceFolder, QSpinBox *rollEdit)
 {
-    addStudentPage->close();
-
-    QMainWindow *addFacePage = new QMainWindow;
+    addFacePage = new QMainWindow;
     addFacePage->setWindowTitle("Add Face");
-    addFacePage->setFixedSize(339, 599);
+    addFacePage->setFixedSize(432, 768);
 
     QLabel *bg = new QLabel(addFacePage);
-    bg->setPixmap(QPixmap("bg(2).png"));
+    bg->setPixmap(QPixmap("bgs/6.jpg"));
     bg->setScaledContents(true);
-    bg->resize(339, 599);
+    bg->resize(432, 768);
 
     int roll = rollEdit->value();
 
-    if(roll >=1 && roll < 10)
+    if (roll >= 1 && roll < 10)
     {
         rollEdit->setPrefix("0");
     }
 
     QDir cdir, fdir;
-    qDebug()<<classFolder;
-    if(!cdir.exists(classFolder))
+
+    if (!cdir.exists(classFolder))
     {
         cdir.mkpath(classFolder);
 
-        if(!fdir.exists(faceFolder))
+        if (!fdir.exists(faceFolder))
         {
             fdir.mkpath(faceFolder);
         }
@@ -155,7 +148,7 @@ void Home:: addFaceButton(QString classFolder, QString faceFolder, QSpinBox *rol
     else
     {
 
-        if(!fdir.exists(faceFolder))
+        if (!fdir.exists(faceFolder))
         {
             fdir.mkpath(faceFolder);
         }
@@ -164,49 +157,49 @@ void Home:: addFaceButton(QString classFolder, QString faceFolder, QSpinBox *rol
     }
 
     QPushButton *video = new QPushButton("Video", addFacePage);
-    video->setGeometry(110, 150, 120, 30);
+    video->setGeometry(166, 250, 120, 40);
 
     QPushButton *webCam = new QPushButton("Web Cam", addFacePage);
-    webCam->setGeometry(110, 250, 120, 30);
+    webCam->setGeometry(166, 350, 120, 40);
 
     QPushButton *back = new QPushButton("Back", addFacePage);
-    back->setGeometry(110, 350, 120, 30);
+    back->setGeometry(166, 450, 120, 40);
 
-    addFacePage->show();
-    menu->close();
-
-    connect(video, &QPushButton::clicked, [this, rollEdit, classFolder, addFacePage](bool)
+    connect(video, &QPushButton::clicked, [this, rollEdit, classFolder](bool)
     {
-        addFacePage->close();
-        this->videoPathButton(rollEdit, classFolder);
-        isFaceAdded=true;
+        addFacePage->hide();
+        this->videoButton(classFolder, rollEdit);
     });
 
     connect(webCam, &QPushButton::clicked, [this, rollEdit, classFolder](bool)
     {
-        this->webCamButton(rollEdit, classFolder);
-        isFaceAdded=true;
+        AddStudent S(classFolder, rollEdit);
+
+        isFaceAdded = true;
+        this->webCamButton(S);
     });
 
-
-    connect(back, &QPushButton::clicked, [this, addFacePage]()
+    connect(back, &QPushButton::clicked, [this]()
     {
         this->hide();
         addStudentPage->show();
         addFacePage->close();
     });
+
+    addFacePage->show();
+    menu->close();
 }
 
-void Home:: recognizeFaceButton()
+void Home::recognizeFaceButton()
 {
     QWidget *recognizeFacePage = new QWidget;
-    recognizeFacePage->setWindowTitle("Recognize Face");
-    recognizeFacePage->setFixedSize(339, 599);
+    recognizeFacePage->setWindowTitle("Attendance");
+    recognizeFacePage->setFixedSize(432, 768);
 
     QLabel *bg = new QLabel(recognizeFacePage);
-    bg->setPixmap(QPixmap("bg(2).png"));
+    bg->setPixmap(QPixmap("bgs/10.jpg"));
     bg->setScaledContents(true);
-    bg->resize(339, 599);
+    bg->resize(432, 768);
 
     QVBoxLayout *layout = new QVBoxLayout;
 
@@ -217,10 +210,20 @@ void Home:: recognizeFaceButton()
     layout->addWidget(label1);
     layout->addWidget(comboBox);
 
-    QLabel *label2 = new QLabel("Batch");
-    QSpinBox *batchEdit = new QSpinBox;
-    batchEdit ->setRange(2018, 2099);
+    QLabel *label2 = new QLabel("Subject");
+    QComboBox *subBox = new QComboBox;
+    subBox->addItem("OOPS");
+    subBox->addItem("OS");
+    subBox->addItem("ML");
+    subBox->addItem("DIP");
+    subBox->addItem("BIO INFO");
     layout->addWidget(label2);
+    layout->addWidget(subBox);
+
+    QLabel *label3 = new QLabel("Batch");
+    QSpinBox *batchEdit = new QSpinBox;
+    batchEdit->setRange(2018, 2099);
+    layout->addWidget(label3);
     layout->addWidget(batchEdit);
 
     QLabel *dateLabel = new QLabel();
@@ -239,36 +242,54 @@ void Home:: recognizeFaceButton()
     QPushButton *back = new QPushButton("Back");
     layout->addWidget(back);
 
-    connect(dateEdit, &QDateEdit::dateChanged, this, &Home::dateChanged);
-
-    QFrame* qframe = new QFrame(this);
-    qframe->setGeometry(0, 0, 500, 500);
-
-    connect(markButton, &QPushButton::clicked, [this, qframe, comboBox, batchEdit, dateEdit, recognizeFacePage](bool)
+    connect(markButton, &QPushButton::clicked, [this, comboBox, subBox, batchEdit, dateEdit, recognizeFacePage](bool)
     {
-        QString cf =  dir + comboBox->currentText() + batchEdit->text();
-        QString ff = cf + "/faces";
+        QString classFolder =  dir + comboBox->currentText() + batchEdit->text();
+        QString faceFolder = classFolder + "/faces";
 
-        qDebug() <<cf;
+        QString date = dateEdit->text();
 
-        QDir dir(ff);
-        QString attendanceFile=cf+"/"+dateEdit->text()+".txt";
+        QDir cdir(classFolder);
+        QDir fdir(faceFolder);
 
-        if(dir.exists())
+        if(cdir.exists())
         {
-          QString filename = cf + "/eigenface.yml";
-          QFile file(filename);
+            classFolder += "/";
 
-          if(file.exists())
-          {
-              faceRecognition(filename, this, cf, comboBox, batchEdit, attendanceFile, dateEdit);
-          }
-          else
-          {
-              recognizeFacePage->close();
-              this->showMessage("Data Not Trained Yet");
-          }
+            if(fdir.exists())
+            {
+                QString filename = classFolder + "eigenface.yml";
+                QFile file(filename);
 
+                QString subFolder = classFolder + subBox->currentText();
+                QDir sdir(subFolder);
+
+                if(!sdir.exists())
+                {
+                    cdir.mkpath(subFolder);
+                    subFolder += "/";
+                }
+                else
+                {
+                   subFolder += "/";
+                }
+
+                if(file.exists())
+                {
+                    MarkAttendance M(classFolder, subBox, comboBox, batchEdit, date);
+                    M.faceRecognition();
+                }
+                else
+                {
+                    recognizeFacePage->close();
+                    this->showMessage("Data Not Trained Yet");
+                }
+            }
+            else
+            {
+                recognizeFacePage->close();
+                this->showMessage("Directory Does'nt Exist");
+            }
         }
         else
         {
@@ -277,11 +298,10 @@ void Home:: recognizeFaceButton()
         }
     });
 
-    connect(back, &QPushButton::clicked, [this, qframe, recognizeFacePage]()
+    connect(back, &QPushButton::clicked, [this, recognizeFacePage]()
     {
         this->hide();
         menu->show();
-        qframe->close();
         recognizeFacePage->close();
     });
 
@@ -290,16 +310,16 @@ void Home:: recognizeFaceButton()
     menu->close();
 }
 
-void Home:: addStudentButton()
+void Home::addStudentButton()
 {
     addStudentPage = new QWidget;
     addStudentPage->setWindowTitle("Add Student");
-    addStudentPage->setFixedSize(339, 559);
+    addStudentPage->setFixedSize(432, 768);
 
     QLabel *bg = new QLabel(addStudentPage);
-    bg->setPixmap(QPixmap("bg(2).png"));
+    bg->setPixmap(QPixmap("bgs/6.jpg"));
     bg->setScaledContents(true);
-    bg->resize(339, 599);
+    bg->resize(432, 768);
 
     QVBoxLayout *layout = new QVBoxLayout;
 
@@ -337,30 +357,34 @@ void Home:: addStudentButton()
     layout->addWidget(backButton);
 
     connect(addFace, &QPushButton::clicked, [this, comboBox, batchEdit, rollEdit](bool)
-    {
+            {
+        isFaceAdded = false;
+
         QString classFolder = dir + comboBox->currentText() + batchEdit->text();
         QString faceFolder = classFolder + "/faces";
-        this->addFaceButton(classFolder, faceFolder, rollEdit);
-    });
+
+        addStudentPage->close();
+        this->addFaceButton(classFolder, faceFolder, rollEdit); });
 
     connect(submitButton, &QPushButton::clicked, [this, comboBox, batchEdit, nameEdit, rollEdit]()
-    {
+            {
         if(isFaceAdded)
         {
-            QString cf = dir + comboBox->currentText() + batchEdit->text() + "/";
-            QString filename = cf + comboBox->currentText() + batchEdit->text() + ".txt";
-            cout<<filename.toStdString();
-            QFile file(filename);
+            QString classFolder = dir + comboBox->currentText() + batchEdit->text() + "/";
+            QString sf = classFolder + comboBox->currentText() + batchEdit->text() + ".txt";
+
+            QFile file(sf);
 
             if (file.open(QIODevice::Append | QIODevice::Text))
             {
                 QTextStream stream(&file);
-                stream << nameEdit->text() << " " << rollEdit->text() << " " << batchEdit->text() << " " << comboBox->currentText() << " 0" << "\n";
+                stream << nameEdit->text() << " " << rollEdit->text() << " " << batchEdit->text() << " " << comboBox->currentText() << "\n";
+
                 file.close();
+
                 addStudentPage->close();
                 this->showMessage("Data Entered Successfully!!");
             }
-
 
             isFaceAdded = false;
         }
@@ -368,32 +392,29 @@ void Home:: addStudentButton()
         {
             addStudentPage->close();
             this->showMessage("Add Face To Save The Data!!");
-        }
-    });
-
+        } });
 
     connect(backButton, &QPushButton::clicked, [this]()
-    {
+            {
         this->hide();
         menu->show();
-        addStudentPage->close();
-    });
+        addStudentPage->close(); });
 
     addStudentPage->setLayout(layout);
     addStudentPage->show();
     menu->close();
 }
 
-void Home:: deleteStudentButton()
+void Home::deleteStudentButton()
 {
     QWidget *deleteStudentPage = new QWidget;
     deleteStudentPage->setWindowTitle("Delete Student");
-    deleteStudentPage->setFixedSize(339, 599);
+    deleteStudentPage->setFixedSize(432, 768);
 
     QLabel *bg = new QLabel(deleteStudentPage);
-    bg->setPixmap(QPixmap("bg(2).png"));
+    bg->setPixmap(QPixmap("bgs/8.jpg"));
     bg->setScaledContents(true);
-    bg->resize(339, 599);
+    bg->resize(432, 768);
 
     QVBoxLayout *layout = new QVBoxLayout;
 
@@ -412,7 +433,7 @@ void Home:: deleteStudentButton()
 
     QLabel *label3 = new QLabel("Batch");
     QSpinBox *batchEdit = new QSpinBox;
-    batchEdit ->setRange(2000, 2099);
+    batchEdit->setRange(2018, 2099);
     layout->addWidget(label3);
     layout->addWidget(batchEdit);
 
@@ -424,90 +445,104 @@ void Home:: deleteStudentButton()
 
     connect(deleteButton, &QPushButton::clicked, [this, comboBox, batchEdit, rollEdit, deleteStudentPage]()
     {
-        QString classFolder =  dir + comboBox->currentText() + batchEdit->text();
-        QString faceFolder = classFolder + "/faces";
+        QString classFolder = dir + comboBox->currentText() + batchEdit->text();
+        QDir cdir;
 
-        QString filename = classFolder + "/" + comboBox->currentText() + batchEdit->text()  + ".txt";
-
-        QFile file(filename);
+        if (cdir.exists(classFolder))
+        {
+            classFolder += "/";
+        }
+        else
+        {
+            deleteStudentPage->close();
+            this->showMessage("Directory not available");
+        }
 
         int roll = rollEdit->value();
 
-        if(roll >=1 && roll < 10)
+        if (roll >= 1 && roll < 10)
         {
             rollEdit->setPrefix("0");
         }
 
-        if (file.open(QIODevice::ReadOnly | QIODevice::Text))
-        {
-            QStringList students;
-            QTextStream stream(&file);
-            while (!stream.atEnd())
+        QString filename = classFolder + comboBox->currentText() + batchEdit->text() + ".txt";
+        QFile file(filename);
+
+
+            if (file.open(QIODevice::ReadOnly | QIODevice::Text))
             {
-                students << stream.readLine();
-            }
-
-            for (int i = 0; i < students.size(); i++)
-            {
-                QStringList fields = students[i].split(" ");
-
-                int j = 0;
-
-                while(j < fields.size())
+                QStringList students;
+                QTextStream stream(&file);
+                while (!stream.atEnd())
                 {
-                    if (fields[j] == rollEdit->text())
+                    students << stream.readLine();
+                }
+
+                for (int i = 0; i < students.size(); i++)
+                {
+                    QStringList fields = students[i].split(" ");
+
+                    int j = 0;
+
+                    while (j < fields.size())
                     {
-                        students.removeAt(i);
-                        break;
-                    }
-                    else
-                    {
-                        j++;
+                        if (fields[j] == rollEdit->text())
+                        {
+                            students.removeAt(i);
+                            break;
+                        }
+                        else
+                        {
+                            j++;
+                        }
                     }
                 }
 
+                file.close();
+
+                if (file.open(QIODevice::WriteOnly | QIODevice::Text))
+                {
+                    QTextStream stream(&file);
+                    for (const QString &student : students)
+                    {
+                        stream << student << "\n";
+                    }
+                }
             }
 
             file.close();
 
-            if (file.open(QIODevice::WriteOnly | QIODevice::Text))
-            {
-                QTextStream stream(&file);
-                for (const QString &student : students) {
-                    stream << student << "\n";
-                }
-            }
-        }
+        QString faceFolder = classFolder + "faces";
 
-        file.close();
+        QDir fdir(faceFolder);
 
-        QDir dir(faceFolder);
-
-        if(dir.exists())
+        if (fdir.exists())
         {
             QStringList filters;
-
             filters << rollEdit->text() + "*.jpg";
 
-            dir.setNameFilters(filters);
+            fdir.setNameFilters(filters);
 
-            QStringList imageFiles = dir.entryList();
+            QStringList imageFiles = fdir.entryList();
 
-            for(int i=0; i < imageFiles.size(); i++)
+            for (int i = 0; i < imageFiles.size(); i++)
             {
-                QFile file(dir.path() + "/" + imageFiles.at(i));
+                QFile file(fdir.path() + "/" + imageFiles.at(i));
                 file.remove();
             }
-            eigenFaceTrainer();
+
+            AddStudent S(classFolder, rollEdit);
+            S.eigenFaceTrainer();
 
             deleteStudentPage->close();
             this->showMessage("Data Deleted Successfully");
         }
         else
         {
-        deleteStudentPage->close();
-        this->showMessage("Directory not available");
+            deleteStudentPage->close();
+            this->showMessage("Face Directory not available");
         }
+
     });
 
     connect(back, &QPushButton::clicked, [this, deleteStudentPage]()
@@ -515,7 +550,6 @@ void Home:: deleteStudentButton()
         this->hide();
         menu->show();
         deleteStudentPage->close();
-
     });
 
     deleteStudentPage->setLayout(layout);
@@ -523,28 +557,28 @@ void Home:: deleteStudentButton()
     menu->close();
 }
 
-void Home:: showMenu()
+void Home::showMenu()
 {
     menu = new QMainWindow;
-    menu->setWindowTitle("Menu");
-    menu->setFixedSize(339, 599);
+    menu->setWindowTitle("AMS");
+    menu->setFixedSize(432, 768);
 
     QLabel *bg = new QLabel(menu);
-    bg->setPixmap(QPixmap("bg(2).png"));
+    bg->setPixmap(QPixmap("bgs/3.jpg"));
     bg->setScaledContents(true);
-    bg->resize(339, 599);
+    bg->resize(432, 768);
 
     QPushButton *recognizeFace = new QPushButton("Attendance", menu);
-    recognizeFace->setGeometry(110, 100, 120, 30);
+    recognizeFace->setGeometry(166, 240, 120, 40);
 
     QPushButton *addStudent = new QPushButton("Add Student", menu);
-    addStudent->setGeometry(110, 200, 120, 30);
+    addStudent->setGeometry(166, 340, 120, 40);
 
     QPushButton *deleteStudent = new QPushButton("Delete Student", menu);
-    deleteStudent->setGeometry(110, 300, 120, 30);
+    deleteStudent->setGeometry(166, 440, 120, 40);
 
     QPushButton *back = new QPushButton("Back", menu);
-    back->setGeometry(110, 400, 120, 30);
+    back->setGeometry(166, 540, 120, 40);
 
     connect(recognizeFace, &QPushButton::clicked, this, &Home::recognizeFaceButton);
 
@@ -562,18 +596,18 @@ void Home:: showMenu()
     menu->show();
 }
 
-Home:: Home()
+Home::Home()
 {
-    setWindowTitle("Home");
-    setFixedSize(339, 599);
+    setWindowTitle("AMS");
+    setFixedSize(432, 768);
 
     QLabel *bg = new QLabel(this);
-    bg->setPixmap(QPixmap("bg.png"));
+    bg->setPixmap(QPixmap("bgs/1.jpg"));
     bg->setScaledContents(true);
-    bg->resize(339, 599);
+    bg->resize(432, 768);
 
     QPushButton *enter = new QPushButton("Enter", this);
-    enter->setGeometry(120, 380, 100, 30);
+    enter->setGeometry(166, 240, 100, 40);
 
     connect(enter, &QPushButton::clicked, this, &Home::showMenu);
 }
