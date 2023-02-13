@@ -6,7 +6,7 @@
 
 CascadeClassifier face_cascade;
 string faceFolder;
-string xmlPath = "/home/teja/OpenCV/opencv/data/haarcascades/haarcascade_frontalface_alt.xml";
+string xmlPath = "/home/litoria/OpenCV/opencv/data/haarcascades/haarcascade_frontalface_alt.xml";
 
 AddStudent::AddStudent(QString classFolder, QSpinBox *rollEdit)
 {
